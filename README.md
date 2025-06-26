@@ -23,10 +23,12 @@ I used [Better BibTeX for Zotero](https://retorque.re/zotero-better-bibtex/) to 
 
 ```sh
 fd -e sql -X sqlfluff fix
-dotnet format
+csharpier format .
 ```
 
 SQL style -> https://handbook.gitlab.com/handbook/enterprise-data/platform/sql-style-guide/
+
+https://ctan.org/pkg/biblatex
 
 ## LICENSE
 

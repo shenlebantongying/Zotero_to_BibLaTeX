@@ -19,7 +19,7 @@ GROUP BY items.itemid;
 
 SELECT
   mainTable.*,
-  json_group_array(json_object('f', creators.firstName, 'l', creators.lastName, 'm', creators.fieldMode))
+  json_group_array(json_object('f', creators.firstName, 'l', creators.lastName, 'm', creators.fieldMode)) as authors
 FROM mainTable
 LEFT JOIN itemCreators ON mainTable.itemID = itemCreators.itemID
 LEFT JOIN creators ON itemCreators.creatorID = creators.creatorID

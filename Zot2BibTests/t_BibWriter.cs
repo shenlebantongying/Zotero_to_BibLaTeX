@@ -1,18 +1,15 @@
-﻿
-namespace Zot2BibTests;
+﻿namespace Zot2BibTests;
 
 public class Tests
 {
     [SetUp]
-    public void Setup()
-    {
-    }
+    public void Setup() { }
 
     [Test]
     public void Test1()
     {
         var a = new Zot2Bib.BibWriter();
-        a.Print();
+        a.PrintItem();
         Assert.Pass();
     }
 }
