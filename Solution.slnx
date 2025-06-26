@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Zot2BibTests\Zot2BibTests.csproj" Type="Classic C#" />
+  <Project Path="Zot2Bib\Zot2Bib.csproj" Type="Classic C#" />
+</Solution>
