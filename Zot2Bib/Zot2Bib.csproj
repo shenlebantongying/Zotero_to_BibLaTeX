@@ -12,4 +12,8 @@
         <PackageReference Include="SQLitePCLRaw.bundle_sqlite3" Version="2.1.11"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="../SQL/GetAllFields.sql" />
+    </ItemGroup>
+
 </Project>

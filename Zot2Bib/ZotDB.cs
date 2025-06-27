@@ -4,24 +4,26 @@ namespace Zot2Bib;
 
 public class ZotDb
 {
-    SqliteConnection Connection;
+    private readonly SqliteConnection _connection;
+    private readonly SqlScripts _sqlScripts = new();
 
-    public ZotDb(string dbpath)
+    public ZotDb(String dbpath)
     {
-        this.Connection = new SqliteConnection($"Data Source={dbpath};Mode=ReadOnly");
-        Connection.Open();
-        Console.WriteLine(Connection.DataSource);
+        _connection = new SqliteConnection($"Data Source={dbpath};Mode=ReadOnly");
+        _connection.Open();
+        Console.WriteLine(_connection.DataSource);
     }
 
-    public List<string> GetFields()
+    public List<String> GetFields()
     {
-        var command = Connection.CreateCommand();
+        var command = _connection.CreateCommand();
         command.CommandText = """
-            SELECT fieldName FROM fieldsCombined
+            SELECT fieldName FROM fieldsCombined;
             """;
+
         using var reader = command.ExecuteReader();
 
-        var ret = new List<string>();
+        var ret = new List<String>();
 
         while (reader.Read())
         {
@@ -31,47 +33,10 @@ public class ZotDb
         return ret;
     }
 
-    public void PrintFields()
+    public void PrintAuthors()
     {
-        foreach (var field in GetFields())
-        {
-            Console.WriteLine(
-                $"public string? {string.Concat(field[0].ToString().ToUpper(), field.AsSpan(1))} {{ get; set; }}"
-            );
-        }
-    }
-
-    public void PrintStaffs()
-    {
-        var command = Connection.CreateCommand();
-        command.CommandText = """
-            DROP VIEW IF EXISTS mainTable;
-            CREATE TEMPORARY VIEW IF NOT EXISTS mainTable (
-              itemID, title, type, date, url, doi
-            ) AS SELECT
-              items.itemid,
-              group_concat(CASE WHEN fieldname = 'title' THEN itemdatavalues.value END) AS title,
-              group_concat(CASE WHEN fieldname = 'type' THEN itemdatavalues.value END) AS type,
-              group_concat(CASE WHEN fieldname = 'date' THEN itemdatavalues.value END) AS date,
-              group_concat(CASE WHEN fieldname = 'url' THEN itemdatavalues.value END) AS url,
-              group_concat(CASE WHEN fieldname = 'DOI' THEN itemdatavalues.value END) AS doi
-            FROM
-              items
-            LEFT JOIN itemdata ON items.itemid = itemdata.itemid
-            LEFT JOIN fieldscombined ON itemdata.fieldid = fieldscombined.fieldid
-            LEFT JOIN itemdatavalues ON itemdata.valueid = itemdatavalues.valueid
-            GROUP BY items.itemid;
-
-            SELECT
-              mainTable.*,
-              json_group_array(json_object('f', creators.firstName, 'l', creators.lastName, 'm', creators.fieldMode)) as authors
-            FROM mainTable
-            LEFT JOIN itemCreators ON mainTable.itemID = itemCreators.itemID
-            LEFT JOIN creators ON itemCreators.creatorID = creators.creatorID
-            GROUP BY
-              mainTable.itemID;
-            """;
-
+        var command = _connection.CreateCommand();
+        command.CommandText = _sqlScripts.Get(SqlScripts.Enum.GetAllFields);
         using var reader = command.ExecuteReader();
 
         var fieldNameToIndex = Enumerable
@@ -86,5 +51,74 @@ public class ZotDb
             Console.WriteLine(s);
             Console.WriteLine(authors);
         }
+    }
+
+    public void Iterating()
+    {
+        var command = _connection.CreateCommand();
+        command.CommandText = _sqlScripts.Get(SqlScripts.Enum.GetAllFields);
+        using var reader = command.ExecuteReader();
+
+        var fieldNameToIndex = Enumerable
+            .Range(0, reader.FieldCount)
+            .ToDictionary(i => reader.GetName(i), i => i);
+        ;
+        var indexToFieldName = Enumerable
+            .Range(0, reader.FieldCount)
+            .ToDictionary(i => i, i => reader.GetName(i));
+
+        var allItems = new List<ZotItem>();
+        while (reader.Read())
+        {
+            var item = new ZotItem();
+            for (var i = 0; i < reader.FieldCount; i++)
+            {
+                if (!reader.IsDBNull(i))
+                {
+                    item.SetField(indexToFieldName[i], reader.GetString(i));
+                }
+            }
+            allItems.Add(item);
+        }
+        Console.WriteLine(allItems);
+    }
+
+    public void GenerateZotItem()
+    {
+        foreach (var field in GetFields())
+        {
+            Console.WriteLine($"public string? {CapFirst(field)} {{ get; set; }}");
+        }
+    }
+
+    public void GenerateGroupCons()
+    {
+        foreach (var field in GetFields())
+        {
+            Console.WriteLine(
+                $"group_concat(CASE WHEN fieldname = '{field}' THEN itemdatavalues.value END) AS '{field}' ,"
+            );
+        }
+    }
+
+    public void GenerateFieldList()
+    {
+        foreach (var field in GetFields())
+        {
+            Console.Write($"'{field}',");
+        }
+    }
+
+    public void GenerateZotItemAssignment()
+    {
+        foreach (var field in GetFields())
+        {
+            Console.WriteLine($"\"{field.ToLower()}\" => {CapFirst(field)} = value, ");
+        }
+    }
+
+    String CapFirst(String s)
+    {
+        return String.Concat(s[0].ToString().ToUpper(), s.AsSpan(1));
     }
 }
