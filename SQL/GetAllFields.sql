@@ -4,7 +4,7 @@ DROP VIEW IF EXISTS mainTable;
 CREATE TEMPORARY VIEW IF NOT EXISTS mainTable (
   itemID, 'title', 'abstractNote', 'artworkMedium', 'medium', 'artworkSize', 'date', 'language', 'shortTitle', 'archive', 'archiveLocation', 'libraryCatalog', 'callNumber', 'url', 'accessDate', 'rights', 'extra', 'audioRecordingFormat', 'seriesTitle', 'volume', 'numberOfVolumes', 'place', 'label', 'publisher', 'runningTime', ISBN, 'billNumber', 'number', 'code', 'codeVolume', 'section', 'codePages', 'pages', 'legislativeBody', 'authority', 'session', 'history', 'blogTitle', 'publicationTitle', 'websiteType', 'type', 'series', 'seriesNumber', 'edition', 'numPages', 'bookTitle', 'caseName', 'court', 'dateDecided', 'docketNumber', 'reporter', 'reporterVolume', 'firstPage', 'versionNumber', 'system', 'company', 'programmingLanguage', 'proceedingsTitle', 'conferenceName', DOI, 'identifier', 'repository', 'repositoryLocation', 'format', 'citationKey', 'dictionaryTitle', 'subject', 'encyclopediaTitle', 'distributor', 'genre', 'videoRecordingFormat', 'forumTitle', 'postType', 'committee', 'documentNumber', 'interviewMedium', 'issue', 'seriesText', 'journalAbbreviation', ISSN, 'letterType', 'manuscriptType', 'mapType', 'scale', 'country', 'assignee', 'issuingAuthority', 'patentNumber', 'filingDate', 'applicationNumber', 'priorityNumbers', 'issueDate', 'references', 'legalStatus', 'status', 'episodeNumber', 'audioFileType', 'archiveID', 'presentationType', 'meetingName', 'programTitle', 'network', 'reportNumber', 'reportType', 'institution', 'organization', 'nameOfAct', 'codeNumber', 'publicLawNumber', 'dateEnacted', 'thesisType', 'university', 'studio', 'websiteTitle'
 ) AS SELECT
-  items.itemID,
+  collectionItems.itemID,
   group_concat(CASE WHEN fieldname = 'title' THEN itemdatavalues.value END) AS 'title',
   group_concat(CASE WHEN fieldname = 'abstractNote' THEN itemdatavalues.value END) AS 'abstractNote',
   group_concat(CASE WHEN fieldname = 'artworkMedium' THEN itemdatavalues.value END) AS 'artworkMedium',
@@ -120,11 +120,11 @@ CREATE TEMPORARY VIEW IF NOT EXISTS mainTable (
   group_concat(CASE WHEN fieldname = 'websiteTitle' THEN itemdatavalues.value END) AS 'websiteTitle'
 
 FROM
-  items
-LEFT JOIN itemdata ON items.itemid = itemdata.itemid
+  collectionItems
+LEFT JOIN itemdata ON collectionItems.itemid = itemdata.itemid
 LEFT JOIN fieldscombined ON itemdata.fieldid = fieldscombined.fieldid
 LEFT JOIN itemdatavalues ON itemdata.valueid = itemdatavalues.valueid
-GROUP BY items.itemid;
+GROUP BY collectionItems.itemid;
 
 SELECT
   mainTable.*,

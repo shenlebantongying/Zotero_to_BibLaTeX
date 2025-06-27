@@ -9,7 +9,6 @@ public class Tests
     public void Test1()
     {
         var a = new Zot2Bib.BibWriter();
-        a.PrintItem();
         Assert.Pass();
     }
 }

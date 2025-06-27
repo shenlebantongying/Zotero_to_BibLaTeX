@@ -125,6 +125,7 @@ public struct ZotItem()
 
     public void SetField(String fieldName, String value)
     {
+        value = value.Trim();
         var f = fieldName.ToLower();
         if (f == "itemid")
         {

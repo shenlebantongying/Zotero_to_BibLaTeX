@@ -80,6 +80,11 @@ public class ZotDb
             }
             allItems.Add(item);
         }
+
+        foreach (var i in allItems)
+        {
+            BibWriter.PrintItem(i);
+        }
         Console.WriteLine(allItems);
     }
 
